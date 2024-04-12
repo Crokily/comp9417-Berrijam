@@ -1,0 +1,2 @@
+https://huggingface.co/google/vit-base-patch16-224-in21k/resolve/main/pytorch_model.bin?download=true
+直接下载这个放进来
