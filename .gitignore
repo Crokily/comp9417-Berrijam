@@ -1,1 +1,1 @@
-resources\pretrained\pytorch_model.bin
+*.bin
