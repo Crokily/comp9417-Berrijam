@@ -14,6 +14,7 @@ import pytorch_lightning as pl
 from torchmetrics import Accuracy
 from transformers import ViTImageProcessor, ViTForImageClassification, ViTFeatureExtractor
 from torchvision import transforms
+import matplotlib.pyplot as plt
 
 ########################################################################################################################
 
@@ -83,6 +84,56 @@ class Classifier(pl.LightningModule):
 
     def configure_optimizers(self):
         return torch.optim.Adam(self.parameters(), lr=self.hparams.lr)
+
+# 验证数据
+def roc(y_true, y_score, pos_label):
+    """
+    y_true：真实标签
+    y_score：模型预测分数
+    pos_label：正样本标签，如“1”
+    """
+    # 统计正样本和负样本的个数
+    num_positive_examples = (y_true == pos_label).sum()
+    num_negtive_examples = len(y_true) - num_positive_examples
+
+    tp, fp = 0, 0
+    tpr, fpr, thresholds = [], [], []
+    score = max(y_score) + 1
+    
+    # 根据排序后的预测分数分别计算fpr和tpr
+    for i in np.flip(np.argsort(y_score)):
+        # 处理样本预测分数相同的情况
+        if y_score[i] != score:
+            fpr.append(fp / num_negtive_examples)
+            tpr.append(tp / num_positive_examples)
+            thresholds.append(score)
+            score = y_score[i]
+            
+        if y_true[i] == pos_label:
+            tp += 1
+        else:
+            fp += 1
+
+    fpr.append(fp / num_negtive_examples)
+    tpr.append(tp / num_positive_examples)
+    thresholds.append(score)
+
+    return fpr, tpr, thresholds
+
+def compute(y_true,y_score,thresholds):
+    #return confusion matrix
+    matrix=[0,0,0,0] #TP,FP,FN,TN
+    for i in range(len(y_score)):
+        if y_score[i]>=thresholds and y_true[i] == 1:
+            matrix[0]+=1
+        elif y_score[i]>=thresholds and y_true[i] == 0:
+            matrix[1]+1
+        elif y_score[i]<thresholds and y_true[i]==1:
+            matrix[2]+=1
+        elif y_score[i] < thresholds and y_true[i] ==0:
+            matrix[3]+=1
+    return matrix, matrix[0]/(matrix[0]+matrix[1]),matrix[0]/(matrix[0]+matrix[3])
+
 
 def parse_args():
     """
@@ -179,6 +230,13 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
     logits_softmax = logits.softmax(1) # val_scores
     print('Preds: ', outputs.logits.softmax(1).argmax(1))
     print('Labels:', val_batch['labels'])
+    
+    #计算混淆矩阵等参数
+    fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
+    matrix, precision, recall = compute(val_batch['labels'],logits_softmax,0.5)
+    f1 = 2*((precision*recall)/(precision+recall))
+    print(f"precision = {precision}, recall = {recall}, f1_score = {f1}")
+    print(matrix)
 
     # Create the output directory and don't error if it already exists.
     os.makedirs(train_output_dir, exist_ok=True)
