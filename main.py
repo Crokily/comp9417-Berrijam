@@ -7,7 +7,6 @@ from torchmetrics import Accuracy
 from transformers import ViTImageProcessor, ViTForImageClassification, ViTFeatureExtractor
 from torchvision import transforms
 
-
 # 自定义数据集
 class CustomDataset(Dataset):
     def __init__(self, csv_file, img_dir, transform=None):
@@ -138,6 +137,8 @@ trainer.fit(classifier, train_dataloader, val_dataloader)
 # 预测并输出结果
 val_batch = next(iter(val_dataloader))
 outputs = model(**val_batch)
+logits = outputs.logits
+logits_softmax = logits.softmax(1) # val_scores
 print('Preds: ', outputs.logits.softmax(1).argmax(1))
 print('Labels:', val_batch['labels'])
 

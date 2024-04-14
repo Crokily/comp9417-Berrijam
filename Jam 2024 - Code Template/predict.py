@@ -7,7 +7,6 @@ from PIL import Image
 
 from common import load_model, load_predict_image_names, load_single_image
 
-
 ########################################################################################################################
 
 def parse_args():
