@@ -220,7 +220,7 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
 
     classifier = Classifier(model, lr=2e-5) # 传入模型和学习率
     # trainer = pl.Trainer(accelerator='gpu', devices=1, precision='16-mixed', max_epochs=15) # 使用GPU训练，训练8个epoch
-    trainer = pl.Trainer(precision='16-mixed',max_epochs=8) # 使用CPU训练，训练8个epoch
+    trainer = pl.Trainer(precision='16-mixed',max_epochs=15) # 如果没有gpu，请使用CPU训练，训练8个epoch
     trainer.fit(classifier, train_dataloader, val_dataloader)
 
     # 预测并输出结果
