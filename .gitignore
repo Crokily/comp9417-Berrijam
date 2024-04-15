@@ -2,3 +2,5 @@
 *.safetensors
 lightning_logs
 __pycache__
+path/to/models
+path/to/predictions

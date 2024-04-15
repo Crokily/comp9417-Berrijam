@@ -60,7 +60,7 @@ class Classifier(pl.LightningModule):
 
     def __init__(self, model, lr: float = 2e-5, **kwargs):
         super().__init__()
-        self.automatic_optimization = True
+        # self.automatic_optimization = True
         self.save_hyperparameters('lr', *list(kwargs))
         self.model = model
         self.forward = self.model.forward
@@ -231,18 +231,11 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
     print('Labels:', val_batch['labels'])
     
     #计算混淆矩阵等参数
-    fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
-    matrix, precision, recall = compute(val_batch['labels'],logits_softmax,0.5)
-    f1 = 2*((precision*recall)/(precision+recall))
-    print(f"precision = {precision}, recall = {recall}, f1_score = {f1}")
-    print(matrix)
-
-    #计算混淆矩阵等参数
-    #fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
-    #matrix, precision, recall = compute(val_batch['labels'],logits_softmax,0.5)
-    #f1 = 2*((precision*recall)/(precision+recall))
-    #print(f"precision = {precision}, recall = {recall}, f1_score = {f1}")
-    #print(matrix)
+    # fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
+    # matrix, precision, recall = compute(val_batch['labels'],logits_softmax,0.5)
+    # f1 = 2*((precision*recall)/(precision+recall))
+    # print(f"precision = {precision}, recall = {recall}, f1_score = {f1}")
+    # print(matrix)
 
     # Create the output directory and don't error if it already exists.
     os.makedirs(train_output_dir, exist_ok=True)

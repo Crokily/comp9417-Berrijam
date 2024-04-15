@@ -34,8 +34,10 @@ def predict_image(model, processed_image):
     with torch.no_grad():
         outputs = model(**processed_image)
         # pred = outputs.logits.argmax(-1).item()
-        pred = outputs.logits.softmax(1).argmax(1).item()
-    return pred
+        # pred = outputs.logits.softmax(1).argmax(1).item()
+        pred_index = outputs.logits.argmax(-1).item()
+        pred_label = 'Yes' if pred_index == 1 else 'No'
+    return pred_label
 
 # 从文本文件中读取图像文件名，并进行预测
 def predict_from_txt(image_dir, txt_file, model, processor, output_csv, target_column_name):
