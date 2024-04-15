@@ -4,10 +4,56 @@ from typing import Any
 
 import pandas as pd
 from PIL import Image
+from torchvision import transforms
 
 from common import load_model, load_predict_image_names, load_single_image
 
+import pandas as pd
+from PIL import Image
+import os
+from torchvision import transforms
+from transformers import ViTImageProcessor
+from transformers import ViTImageProcessor, ViTForImageClassification, ViTFeatureExtractor
+import torch
+
 ########################################################################################################################
+# 加载模型
+def load_model(model_path):
+    model = torch.load(model_path)
+    model.eval()  # Set the model to evaluation mode
+    return model
+
+# 图像预处理
+def preprocess_image(image_path, processor):
+    image = Image.open(image_path)
+    image = image.convert('RGB')  # 确保图像是RGB格式
+    return processor(images=image, return_tensors='pt')
+
+# 预测单个图像
+def predict_image(model, processed_image):
+    with torch.no_grad():
+        outputs = model(**processed_image)
+        # pred = outputs.logits.argmax(-1).item()
+        pred = outputs.logits.softmax(1).argmax(1).item()
+    return pred
+
+# 从文本文件中读取图像文件名，并进行预测
+def predict_from_txt(image_dir, txt_file, model, processor, output_csv, target_column_name):
+    with open(txt_file, 'r') as file:
+        image_files = file.read().splitlines()
+    
+    predictions = []
+    for image_file in image_files:
+        image_path = os.path.join(image_dir, image_file)
+        processed_image = preprocess_image(image_path, processor)
+        pred = predict_image(model, processed_image)
+        predictions.append([image_file, pred])
+    
+    # 将结果写入CSV文件
+    df = pd.DataFrame(predictions, columns=['filename', target_column_name])
+    output_dir = os.path.dirname(output_csv)
+    os.makedirs(output_dir, exist_ok=True)
+    df.to_csv(output_csv, index=False)
 
 def parse_args():
     """
@@ -27,22 +73,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
-def predict(model: Any, image: Image) -> str:
-    """
-    Generate a prediction for a single image using the model, returning a label of 'Yes' or 'No'
-
-    IMPORTANT: The return value should ONLY be either a 'Yes' or 'No' (Case sensitive)
-
-    :param model: the model to use.
-    :param image: the image file to predict.
-    :return: the label ('Yes' or 'No)
-    """
-    predicted_label = 'No'
-    # TODO: Implement your logic to generate prediction for an image here.
-    raise RuntimeError("predict() is not implemented.")
-    return predicted_label
-
+#python predict.py 
+#-d "path/to/data/Data - Is Epic Intro Full" 
+#-l "Is Epic Files.txt" 
+#-t "Is Epic" 
+#-m "path/to/models/Is Epic/" 
+#-o "path/to/predictions/Is Epic Intro Full.csv"
 
 def main(predict_data_image_dir: str,
          predict_image_list: str,
@@ -65,29 +101,11 @@ def main(predict_data_image_dir: str,
     :param predicts_output_csv: Path to the CSV file that will contain all predictions.
     """
 
-    # load pre-trained models or resources at this stage.
-    model = load_model(trained_model_dir, target_column_name)
+    # model = load_model(model_path)
+    model = ViTForImageClassification.from_pretrained(trained_model_dir)  # 模型路径
+    processor = ViTImageProcessor.from_pretrained(trained_model_dir)  # 模型预处理器路径
 
-    # Load in the image list
-    image_list_file = os.path.join(predict_data_image_dir, predict_image_list)
-    image_filenames = load_predict_image_names(image_list_file)
-
-    # Iterate through the image list to generate predictions
-    predictions = []
-    for filename in image_filenames:
-        try:
-            image_path = os.path.join(predict_data_image_dir, filename)
-            image = load_single_image(image_path)
-            label = predict(model, image)
-            predictions.append(label)
-        except Exception as ex:
-            print(f"Error generating prediction for {filename} due to {ex}")
-            predictions.append("Error")
-
-    df_predictions = pd.DataFrame({'Filenames': image_filenames, target_column_name: predictions})
-
-    # Finally, write out the predictions to CSV
-    df_predictions.to_csv(predicts_output_csv, index=False)
+    predict_from_txt(predict_data_image_dir, predict_data_image_dir+'/'+predict_image_list, model, processor, predicts_output_csv,target_column_name)
 
 
 if __name__ == '__main__':

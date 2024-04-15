@@ -1,1 +1,4 @@
 *.bin
+*.safetensors
+lightning_logs
+__pycache__
