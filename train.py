@@ -60,7 +60,7 @@ class Classifier(pl.LightningModule):
 
     def __init__(self, model, lr: float = 2e-5, **kwargs):
         super().__init__()
-        # self.automatic_optimization = True
+        self.automatic_optimization = True
         self.save_hyperparameters('lr', *list(kwargs))
         self.model = model
         self.forward = self.model.forward
@@ -218,8 +218,8 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
     val_dataloader = DataLoader(val_dataset, batch_size=2, collate_fn=collator, shuffle=False, pin_memory=True)
     # 因为样本量较少，所以batch_size设为2，实现mini-batch梯度下降, shuffle=True表示每个epoch都打乱数据集
 
-    classifier = Classifier(model, lr=1e-1) # 传入模型和学习率
-    trainer = pl.Trainer(accelerator='gpu', devices=1, precision='16-mixed', max_epochs=8) # 使用GPU训练，训练8个epoch
+    classifier = Classifier(model, lr=2e-5) # 传入模型和学习率
+    trainer = pl.Trainer(accelerator='gpu', devices=1, precision='16-mixed', max_epochs=15) # 使用GPU训练，训练8个epoch
     trainer.fit(classifier, train_dataloader, val_dataloader)
 
     # 预测并输出结果

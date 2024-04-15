@@ -6,8 +6,6 @@ import pandas as pd
 from PIL import Image
 from torchvision import transforms
 
-from common import load_model, load_predict_image_names, load_single_image
-
 import pandas as pd
 from PIL import Image
 import os
