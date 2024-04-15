@@ -229,6 +229,13 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
     logits_softmax = logits.softmax(1).data.tolist()[0] #val_scores
     print('Preds: ', outputs.logits.softmax(1).argmax(1))
     print('Labels:', val_batch['labels'])
+    
+    #计算混淆矩阵等参数
+    fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
+    matrix, precision, recall = compute(val_batch['labels'],logits_softmax,0.5)
+    f1 = 2*((precision*recall)/(precision+recall))
+    print(f"precision = {precision}, recall = {recall}, f1_score = {f1}")
+    print(matrix)
 
     #计算混淆矩阵等参数
     #fpr, tpr, thresholds = roc(val_batch['labels'], logits_softmax, pos_label=1)
