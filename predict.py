@@ -31,11 +31,11 @@ def preprocess_image(image_path, processor):
 def predict_image(model, processed_image):
     with torch.no_grad():
         outputs = model(**processed_image)
-        # pred = outputs.logits.argmax(-1).item()
-        # pred = outputs.logits.softmax(1).argmax(1).item()
-        pred_index = outputs.logits.argmax(-1).item()
-        pred_label = 'Yes' if pred_index == 1 else 'No'
-    return pred_label
+        scores = torch.softmax(outputs.logits, dim=-1)  # 计算softmax值
+        pred_index = scores.argmax(-1).item()
+        pred_label = 'yes' if pred_index == 1 else 'no'
+        pred_score = scores[0, pred_index].item()  # 获取对应标签的预测分数
+    return pred_label, pred_score # 返回预测标签和分数，正式测试时只需要返回预测标签即可
 
 # 从文本文件中读取图像文件名，并进行预测
 def predict_from_txt(image_dir, txt_file, model, processor, output_csv, target_column_name):
@@ -46,11 +46,15 @@ def predict_from_txt(image_dir, txt_file, model, processor, output_csv, target_c
     for image_file in image_files:
         image_path = os.path.join(image_dir, image_file)
         processed_image = preprocess_image(image_path, processor)
-        pred = predict_image(model, processed_image)
-        predictions.append([image_file, pred])
+        # pred = predict_image(model, processed_image)
+        # predictions.append([image_file, pred])
+        # 调整为有分数的预测结果
+        pred_label, pred_score = predict_image(model, processed_image)
+        predictions.append([image_file, pred_label, pred_score])
     
     # 将结果写入CSV文件
-    df = pd.DataFrame(predictions, columns=['filename', target_column_name])
+    # df = pd.DataFrame(predictions, columns=['filename', target_column_name])
+    df = pd.DataFrame(predictions, columns=['filename', target_column_name, 'yscore'])
     output_dir = os.path.dirname(output_csv)
     os.makedirs(output_dir, exist_ok=True)
     df.to_csv(output_csv, index=False)
