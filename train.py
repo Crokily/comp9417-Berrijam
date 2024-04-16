@@ -218,9 +218,10 @@ def main(train_input_dir: str, train_labels_file_name: str, target_column_name: 
     val_dataloader = DataLoader(val_dataset, batch_size=2, collate_fn=collator, shuffle=False, pin_memory=True)
     # 因为样本量较少，所以batch_size设为2，实现mini-batch梯度下降, shuffle=True表示每个epoch都打乱数据集
 
+    pl.seed_everything(42) # 设置随机种子，保证结果的可重复性
     classifier = Classifier(model, lr=2e-5) # 传入模型和学习率
-    # trainer = pl.Trainer(accelerator='gpu', devices=1, precision='16-mixed', max_epochs=15) # 使用GPU训练，训练15个epoch
-    trainer = pl.Trainer(max_epochs=15) # 如果没有gpu，请使用CPU训练，训练15个epoch
+    trainer = pl.Trainer(accelerator='gpu', devices=1, precision='16-mixed', max_epochs=15) # 使用GPU训练，训练15个epoch
+    # trainer = pl.Trainer(max_epochs=15) # 如果没有gpu，请使用CPU训练，训练15个epoch
     trainer.fit(classifier, train_dataloader, val_dataloader)
 
     # 预测并输出结果
