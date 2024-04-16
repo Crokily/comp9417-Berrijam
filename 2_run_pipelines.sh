@@ -14,9 +14,11 @@ python predict.py -d "path/to/data/Data - Is Epic Intro Full" -l "Is Epic Files.
 ########################################################################################################################
 python train.py -d "path/to/data/Data - Needs Respray - 2024-03-26" -l "Labels-NeedsRespray-2024-03-26.csv" -t "Needs Respray" -o "path/to/models/Needs Respray/"
 python predict.py -d "path/to/data/Data - Needs Respray Full" -l "Needs Respray Files.txt" -t "Needs Respray" -m "path/to/models/Needs Respray/" -o "path/to/predictions/Needs Respray Full.csv"
+python verify.py "path/to/predictions/Needs Respray Full.csv" "path/to/data/Data - Needs Respray Full/Labels-NeedsRespray-2024-04-12.csv" "Needs Respray" "Needs Respray"
 
 ########################################################################################################################
 # Data - Is GenAI
 ########################################################################################################################
 python train.py -d "path/to/data/Data - Is GenAI - 2024-03-25" -l "Labels-IsGenAI-2024-03-25.csv" -t "Is GenAI" -o "path/to/models/Is GenAI/"
 python predict.py -d "path/to/data/Data - Is GenAI Full" -l "Is GenAI Files.txt" -t "Is GenAI" -m "path/to/models/Is GenAI/" -o "path/to/predictions/Is GenAI Full.csv"
+python verify.py "path/to/predictions/Is GenAI Full.csv" "path/to/data/Data - Is GenAI Full/Labels-IsGenAI-2024-04-12.csv" "Is GenAI" "IsGenAI"
